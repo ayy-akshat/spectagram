@@ -10,6 +10,7 @@
   "dependencies": {
     "@babel/runtime": "7.0.0-beta.55",
     "@expo/vector-icons": "^12.0.5",
+    "@react-native-picker/picker": "^2.0.0",
     "@react-navigation/bottom-tabs": "^6.0.5",
     "@react-navigation/drawer": "^6.1.4",
     "@react-navigation/material-bottom-tabs": "^6.0.5",
@@ -19,6 +20,7 @@
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-native": "https://github.com/expo/react-native/archive/sdk-42.0.0.tar.gz",
+    "react-native-dropdown-picker": "^5.1.23",
     "react-native-gesture-handler": "^1.10.3",
     "react-native-ionicons": "^4.6.5",
     "react-native-paper": "^4.9.2",

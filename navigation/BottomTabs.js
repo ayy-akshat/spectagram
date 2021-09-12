@@ -4,6 +4,7 @@ import React from 'react';
 import { StyleSheet, Text, View, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import FeedScreen from '../screens/FeedScreen';
+import FeedPostStack from './FeedPostStack';
 import PostScreen from '../screens/PostScreen';
 import { RFValue } from 'react-native-responsive-fontsize';
 
@@ -67,7 +68,7 @@ export default class BotTabNav extends React.Component {
             >
                 <Tab.Screen
                     name="Feed"
-                    component={FeedScreen}
+                    component={FeedPostStack}
                 />
                 <Tab.Screen
                     name="Post"

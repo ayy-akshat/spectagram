@@ -1,24 +1,26 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { Platform, StyleSheet, Text, View, Image, Dimensions, TouchableOpacity } from 'react-native';
+import { Platform, StyleSheet, Text, View, Image, Dimensions, TouchableOpacity, ScrollView } from 'react-native';
 
 import { RFValue } from 'react-native-responsive-fontsize';
 
-export default class Post extends React.Component {
+export default class ViewPostScreen extends React.Component {
     constructor(props)
     {
-        super(props)
+        super(props);
     }
 
+
     render() {
+        const post = this.props.route.params.post;
+
         return (
-            <TouchableOpacity onPress={() => {
-                this.props.onGoToPost(this.props.post);
-            }}>
-                <View style={styles.post}>
+            <ScrollView>
+                <View style={styles.container}>
                     <View style={{
                         display: 'flex',
-                        flexDirection: 'row'
+                        flexDirection: 'row',
+                        marginLeft: 20
                     }}>
                         <Image
                             source={require("../assets/profile_img.png")}
@@ -26,10 +28,10 @@ export default class Post extends React.Component {
                         />
                         <View>
                             <Text style={styles.postTitle}>
-                                {this.props.post.title}
+                                {post.title}
                             </Text>
                             <Text style={styles.postPoster}>
-                                {this.props.post.op}
+                                {post.op}
                             </Text>
                         </View>
                     </View>
@@ -38,7 +40,7 @@ export default class Post extends React.Component {
                         style={styles.postImg}
                     />
                     <Text style={styles.postCaption}>
-                        {this.props.post.caption}
+                        {post.caption}
                     </Text>
                     <TouchableOpacity style={styles.likeButton}>
                         <View style={styles.likeBtnContentContainer}>
@@ -50,19 +52,18 @@ export default class Post extends React.Component {
 
                     </TouchableOpacity>
                 </View>
-            </TouchableOpacity>
+            </ScrollView>
         );
     }
 }
 
 const styles = StyleSheet.create({
-    post: {
+    container: {
         backgroundColor: "white",
-        margin: 20,
-        borderRadius: 25,
         padding: 25,
-        width: (Platform.OS === "ios" || Platform.OS === "android") ? (Dimensions.get("window").width * 0.9) : "70vw",
-        paddingHorizontal: 20
+        paddingHorizontal: 0,
+        minHeight: "100%",
+        paddingBottom: 100
     },
     postTitle: {
         fontWeight: 'bold',
@@ -73,8 +74,6 @@ const styles = StyleSheet.create({
     },
     postImg: {
         width: "100%",
-        height: 300,
-        marginTop: 20,
         alignSelf: 'center',
         resizeMode: 'contain'
     },

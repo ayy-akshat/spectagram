@@ -50,9 +50,14 @@ export default class FeedScreen extends React.Component
         else
         {
             return (
-                <Post post={item}/>
+                <Post post={item} onGoToPost={this.goToPost}/>
             )
         }
+    }
+
+    goToPost = (post) =>
+    {
+        this.props.navigation.navigate("ViewPostS", {post: post});
     }
 }
 

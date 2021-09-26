@@ -1,6 +1,7 @@
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import LogoutScreen from '../screens/logoutScreen';
 import ProfileScreen from '../screens/Profile';
 import BotTabNav from './BottomTabs';
 
@@ -21,6 +22,10 @@ export default class DrawerNav extends React.Component
                 <Drawer.Screen
                 name="Profile"
                 component={ProfileScreen}
+                />
+                <Drawer.Screen
+                name="Logout"
+                component={LogoutScreen}
                 />
             </Drawer.Navigator>
         );

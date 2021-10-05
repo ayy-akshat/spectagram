@@ -32,4 +32,11 @@ const AppSN = createSwitchNavigator({
 
 const AppCont = createAppContainer(AppSN);
 
-!firebase.apps.length ? firebase.initializeApp(dbConfig) : firebase.app();
+!firebase.apps.length ? firebase.initializeApp({
+  apiKey: "AIzaSyCbEEBj3rX4a9SX5XZWI_XVA-dobukeobU",
+  authDomain: "spectagram-310d7.firebaseapp.com",
+  projectId: "spectagram-310d7",
+  storageBucket: "spectagram-310d7.appspot.com",
+  messagingSenderId: "787084071988",
+  appId: "1:787084071988:web:ee56d11d8565b1eaa6a661"
+}) : firebase.app();

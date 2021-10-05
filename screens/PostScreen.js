@@ -3,8 +3,10 @@ import React from 'react';
 import { Platform, StyleSheet, Text, View, Image, Dimensions, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { Picker } from '@react-native-picker/picker';
+import userCache from '../user';
 
 import { RFValue } from 'react-native-responsive-fontsize';
+import SpectagramHeader from '../components/header';
 
 export default class Post extends React.Component {
     constructor() {
@@ -16,6 +18,10 @@ export default class Post extends React.Component {
             dropdownHeight: 40,
             imageChoice: 0
         }
+    }
+
+    componentDidMount() {
+        userCache.addRefresher(this);
     }
 
     render() {
@@ -39,18 +45,11 @@ export default class Post extends React.Component {
             require("../assets/image_7.jpg"),
         ]
 
+        const styles = userCache.info.lightTheme ? lightStyles : darkStyles;
 
         return (
             <ScrollView contentContainerStyle={styles.container}>
-                <View style={styles.header}>
-                    <Image
-                        source={require("../assets/logo.png")}
-                        style={styles.headerImg}
-                    />
-                    <Text style={styles.headerTxt}>
-                        Make a Post
-                    </Text>
-                </View>
+                <SpectagramHeader/>
 
                 <View style={styles.post}>
                     <View style={{
@@ -59,7 +58,7 @@ export default class Post extends React.Component {
                         width: "100%",
                     }}>
                         <Image
-                            source={require("../assets/profile_img.png")}
+                            source={{uri: userCache.info.pfp}}
                             style={{ width: 38, height: 38, marginRight: 10, borderRadius: 25 }}
                         />
                         <View style={{width: "90%"}}>
@@ -69,7 +68,7 @@ export default class Post extends React.Component {
                                 onChangeText={(titleInput) => { this.setState({ titleInput }) }}
                             />
                             <Text style={styles.postPoster}>
-                                Username
+                                Posting as <Text style={{fontStyle: 'italic'}}>{userCache.info.firstName + " " + userCache.info.lastName}</Text>
                             </Text>
                         </View>
                     </View>
@@ -77,64 +76,17 @@ export default class Post extends React.Component {
                         source={imgChoices[this.state.imageChoice]}
                         style={styles.postImg}
                     />
-                    <View style={{ height: /*RFValue(this.state.dropdownHeight)*/ 40, alignItems: 'center', padding: 5, marginBottom: 30 }}>
-
-                        {/* 
-                        
-                        this isn't working so I'm using a different method (below)
-                        
-                        <DropDownPicker
-                            items={[
-                                { label: "Image 1", value: "i1" },
-                                { label: "Image 2", value: "i2" },
-                                { label: "Image 3", value: "i3" },
-                                { label: "Image 4", value: "i4" },
-                                { label: "Image 5", value: "i5" },
-                                { label: "Image 6", value: "i6" },
-                                { label: "Image 7", value: "i7" },
-                            ]}
-                            defaultValue={this.state.previewImage}
-                            containerStyle={{
-                                height: RFValue(this.state.dropdownHeight),
-                                borderRadius: 20,
-                                marginBottom: 10
-                            }}
-                            onOpen={() => {
-                                if (this.state.dropdownHeight == 40) {
-                                    this.setState({ dropdownHeight: 170 });
-                                }
-                                else {
-                                    this.setState({ dropdownHeight: 40 });
-                                }
-                            }}
-                            onClose={() => {
-                                this.setState({ dropdownHeight: 40 });
-                            }}
-                            // style={{ backgroundColor: "transparent" }}
-                            itemStyle={{
-                                justifyContent: "flex-start",
-                                borderWidth: 1
-                            }}
-                            dropDownStyle={{ backgroundColor: "#2f345d" }}
-                            labelStyle={{
-                                color: "white",
-                            }}
-                            onChangeItem={item =>
-                                this.setState({
-                                    imageChosen: item.value
-                                })
-                            }
-                        /> */}
+                    <View style={{ height: 40, alignItems: 'center', padding: 5, marginBottom: 30 }}>
 
                         <View style={{ display: 'flex', flexDirection: 'row' }}>
                             <TouchableOpacity onPress={() => { this.changeImgChoice(-1) }}>
-                                <Ionicons name="chevron-back-circle" size={30} />
+                                <Ionicons name="chevron-back-circle" size={30} color={userCache.info.lightTheme ? "black" : "white"}/>
                             </TouchableOpacity>
-                            <Text style={{ fontSize: 20, marginHorizontal: 20 }}>
+                            <Text style={{ fontSize: 20, marginHorizontal: 20, color: userCache.info.lightTheme ? "black" : "white" }}>
                                 Image {(this.state.imageChoice + 1).toString()}
                             </Text>
                             <TouchableOpacity onPress={() => { this.changeImgChoice(1) }}>
-                                <Ionicons name="chevron-forward-circle" size={30} />
+                                <Ionicons name="chevron-forward-circle" size={30} color={userCache.info.lightTheme ? "black" : "white"}/>
                             </TouchableOpacity>
                         </View>
 
@@ -169,7 +121,7 @@ export default class Post extends React.Component {
     }
 }
 
-const styles = StyleSheet.create({
+const lightStyles = StyleSheet.create({
     container: {
         alignItems: 'center',
     },
@@ -227,6 +179,97 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         borderRadius: 5,
         borderColor: "#696969",
+        borderWidth: 2,
+        width: "70%"
+    },
+    postButton: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 10,
+        paddingHorizontal: 100,
+        width: "90%",
+        alignSelf: 'center',
+        backgroundColor: "#05A1BD",
+        borderRadius: 100,
+        marginVertical: 20
+    },
+    postBtnContentContainer: {
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    postBtnTxt: {
+        color: "white",
+        textAlignVertical: 'center',
+        marginTop: 7,
+        fontSize: RFValue(10),
+        textAlign: 'center'
+    }
+});
+
+const darkStyles = StyleSheet.create({
+    container: {
+        alignItems: 'center',
+        backgroundColor: "#161616"
+    },
+    header: {
+        marginVertical: 50,
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'center',
+    },
+    headerImg: {
+        width: RFValue(60),
+        height: RFValue(60),
+        marginHorizontal: 10
+    },
+    headerTxt: {
+        fontWeight: 'bold',
+        marginHorizontal: 10,
+        fontSize: RFValue(30)
+    },
+    post: {
+        backgroundColor: "black",
+        margin: 20,
+        borderRadius: 25,
+        padding: 25,
+        width: (Platform.OS === "ios" || Platform.OS === "android") ? (Dimensions.get("window").width * 0.9) : "70vw",
+        paddingHorizontal: 20
+    },
+    postTitle: {
+        fontWeight: 'bold',
+        fontSize: 20,
+        borderWidth: "2",
+        borderColor: "#696969",
+        borderRadius: 5,
+        borderWidth: 2,
+        width: "100%",
+        paddingHorizontal: 10,
+        backgroundColor: "#aaaaaa",
+        color: "white",
+    },
+    postPoster: {
+        fontSize: 12,
+        color: "lightgray"
+    },
+    postImg: {
+        width: "100%",
+        height: 300,
+        marginTop: 20,
+        alignSelf: 'center',
+        resizeMode: 'contain'
+    },
+    postCaption: {
+        alignSelf: 'center',
+        textAlign: 'center',    
+        fontStyle: 'italic',
+        marginTop: 5,
+        marginBottom: 20,
+        fontWeight: 'bold',
+        borderRadius: 5,
+        borderColor: "#696969",
+        backgroundColor: "#aaaaaa",
+        color: "white",
         borderWidth: 2,
         width: "70%"
     },

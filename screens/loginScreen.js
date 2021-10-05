@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, Platform, Image
 import firebase from 'firebase';
 import * as Google from 'expo-google-app-auth';
 import { Ionicons } from '@expo/vector-icons';
+import userCache from '../user';
 
 export default class LoginScreen extends React.Component {
     constructor() {
@@ -11,7 +12,7 @@ export default class LoginScreen extends React.Component {
 
     render() {
         return (
-            <View style={{ alignItems: 'center', backgroundColor: 'gray', flex: 1}}>
+            <View style={{ alignItems: 'center', backgroundColor: "#dddddd", flex: 1}}>
                 <SafeAreaView style={styles.sav} />
 
                 <View style={styles.appHeader}>
@@ -54,6 +55,10 @@ export default class LoginScreen extends React.Component {
     }
 
     signInWithGoogleAsync = async () => {
+        if (Platform.OS === "web")
+        {
+            alert("Google sign in doesn't work on web.");
+        }
         try {
             const result = await Google.logInAsync({
                 behavior: "web",
@@ -85,31 +90,52 @@ export default class LoginScreen extends React.Component {
     }
 
     onSignIn = (googleUser) => {
+
+        console.log("ON SIGN IN");
         // We need to register an Observer on Firebase Auth to make sure auth is initialized.
         var unsubscribe = firebase.auth().onAuthStateChanged((firebaseUser) => {
+            console.log("ON AUTH STATE CHANGED IN LOGIN SCREEN\n\n\n");
             unsubscribe();
             // Check if we are already signed-in Firebase with the correct user.
+            console.log("0");
             if (!this.isUserEqual(googleUser, firebaseUser)) {
                 // Build Firebase credential with the Google ID token.
                 var credential = firebase.auth.GoogleAuthProvider.credential(
                     googleUser.idToken
                 );
 
-                googleUser.accessToken
+                console.log("1");
 
                 // Sign in with credential from the Google user.
+                var result = googleUser;
+                // console.log(result);
                 firebase.auth().signInWithCredential(credential).then(() => {
-                    if (result.additionalUserInfo.isNewUser) {
-                        firebase.database().ref("/users/" + result.user.uid).set({
-                            gmail: result.user.email,
-                            pfp: result.additionalUserInfo.profile.picture,
-                            locale: result.additionalUserInfo.profile.locale,
-                            firstName: result.additionalUserInfo.profile.given_name,
-                            lastName: result.additionalUserInfo.profile.family_name,
-                        })
-                    }
+                    var userRef = firebase.database().ref("/users/").child(firebase.auth().currentUser.uid);
+                    console.log("USER REF\n\n\n", userRef);
+                    console.log("2");
+                    console.log("result.user", result.user);
+                    console.log(userRef.get().then((data) => {
+                        console.log("DATA EXISTS?", data.exists())
+                        if (!data.exists())
+                        {
+                            var user = result.user;
+                            console.log("user uid", firebase.auth().currentUser.uid);
+                            var userUid = firebase.auth().currentUser.uid;
+                            firebase.database().ref("/users/" + userUid).update({
+                                gmail: result.user.email,
+                                pfp: result.user.photoUrl,
+                                // locale: result.user.locale,
+                                firstName: result.user.givenName,
+                                lastName: result.user.familyName ? result.user.familyName : "",
+                                lightTheme: true,
+                            }, (a) => {
+                                console.log("success");
+                            })
+                        }
+                    }))
                     this.props.navigation.navigate("Main");
                 }).catch((error) => {
+                    console.log("4");
                     // Handle Errors here.
                     var errorCode = error.code;
                     var errorMessage = error.message;
@@ -118,6 +144,7 @@ export default class LoginScreen extends React.Component {
                     // The firebase.auth.AuthCredential type that was used.
                     var credential = error.credential;
                     // ...
+                    console.log(errorCode + "\n" + errorMessage + "\n" + email + "\n" + credential);
                 });
             } else {
                 console.log('User already signed-in Firebase.');

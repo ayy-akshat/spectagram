@@ -7,11 +7,21 @@ import FeedScreen from '../screens/FeedScreen';
 import FeedPostStack from './FeedPostStack';
 import PostScreen from '../screens/PostScreen';
 import { RFValue } from 'react-native-responsive-fontsize';
+import userCache from '../user';
 
 const Tab = createMaterialBottomTabNavigator();
 
 export default class BotTabNav extends React.Component {
+
+    componentDidMount() {
+        userCache.addRefresher(this);
+    }
+    componentWillUnmount() {
+        userCache.removeRefresher(this);
+    }
+
     render() {
+        const styles = userCache.info.lightTheme ? lightStyles : darkStyles;
         return (
             <Tab.Navigator
                 labeled={false}
@@ -80,7 +90,7 @@ export default class BotTabNav extends React.Component {
 
 }
 
-const styles = StyleSheet.create({
+const lightStyles = StyleSheet.create({
     container: {
         flex: 1,
         alignItems: 'center',
@@ -88,6 +98,21 @@ const styles = StyleSheet.create({
     },
     bottomTabStyle: {
         backgroundColor: "#dddddd",
+        height: 100,
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 20,
+        overflow: "hidden",
+        position: "absolute"
+    },
+});
+const darkStyles = StyleSheet.create({
+    container: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    bottomTabStyle: {
+        backgroundColor: "#222222",
         height: 100,
         borderTopLeftRadius: 30,
         borderTopRightRadius: 20,

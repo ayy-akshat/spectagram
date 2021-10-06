@@ -6,13 +6,15 @@ import { RFValue } from 'react-native-responsive-fontsize';
 import userCache from '../user';
 
 export default class Post extends React.Component {
-    constructor(props)
-    {
+    constructor(props) {
         super(props)
     }
 
     componentDidMount() {
         userCache.addRefresher(this);
+    }
+    componentWillUnmount() {
+        userCache.removeRefresher(this);
     }
 
     render() {
@@ -22,20 +24,23 @@ export default class Post extends React.Component {
                 this.props.onGoToPost(this.props.post);
             }}>
                 <View style={styles.post}>
+                    <Text style={[styles.postPoster, {marginBottom: 10, fontSize: 10, opacity: 0.4, alignSelf: 'flex-end'}]}>
+                        {new Date(this.props.post.more.date).toLocaleDateString()}
+                    </Text>
                     <View style={{
                         display: 'flex',
                         flexDirection: 'row'
                     }}>
                         <Image
-                            source={require("../assets/profile_img.png")}
+                            source={{ uri: this.props.post.user.pfp }}
                             style={{ width: 38, height: 38, marginRight: 10, borderRadius: 25 }}
                         />
                         <View>
                             <Text style={styles.postTitle}>
-                                {this.props.post.title}
+                                {this.props.post.content.title}
                             </Text>
                             <Text style={styles.postPoster}>
-                                {this.props.post.op}
+                                {this.props.post.user.name}
                             </Text>
                         </View>
                     </View>
@@ -44,7 +49,7 @@ export default class Post extends React.Component {
                         style={styles.postImg}
                     />
                     <Text style={styles.postCaption}>
-                        {this.props.post.caption}
+                        {this.props.post.content.caption}
                     </Text>
                     <TouchableOpacity style={styles.likeButton}>
                         <View style={styles.likeBtnContentContainer}>

@@ -18,10 +18,8 @@ var userCache = {
         
         userCache.info = info;
         console.log("updated to", userCache);
-        for (var r in userCache.refreshers)
-        {
-            userCache.refreshers[r].forceUpdate(() => {console.log("refreshed component", r)});
-        }
+
+        userCache.updateRefreshers();
     },
     changeTheme: (isLight) =>
     {
@@ -59,7 +57,22 @@ var userCache = {
     {
         userCache.refreshers.push(c);
     },
+    removeRefresher: (c) =>
+    {
+        var i = userCache.refreshers.indexOf(c);
+        if (i != -1)
+        {
+            userCache.refreshers.splice(i, 1);
+        }
+    },
     refreshers: [],
+    updateRefreshers: () =>
+    {
+        for (var r in userCache.refreshers)
+        {
+            userCache.refreshers[r].forceUpdate(() => {console.log("refreshed component", r)});
+        }
+    }
 };
 
 export default userCache;

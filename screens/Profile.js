@@ -11,6 +11,10 @@ export default class ProfileScreen extends React.Component {
     componentDidMount() {
         userCache.addRefresher(this);
     }
+    componentWillUnmount()
+    {
+        userCache.removeRefresher(this);
+    }
 
     render() {
 

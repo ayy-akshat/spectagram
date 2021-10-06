@@ -6,39 +6,49 @@ import { RFValue } from 'react-native-responsive-fontsize';
 import userCache from '../user';
 
 export default class ViewPostScreen extends React.Component {
-    constructor(props)
-    {
+    constructor(props) {
         super(props);
     }
 
     componentDidMount() {
         userCache.addRefresher(this);
     }
-
+    componentWillUnmount() {
+        userCache.removeRefresher(this);
+    }
 
     render() {
         const post = this.props.route.params.post;
 
         const styles = userCache.info.lightTheme ? lightStyles : darkStyles;
 
+        console.log("post", post);
+        console.log("props", this.props);
+
         return (
             <ScrollView>
                 <View style={styles.container}>
+                    <Text style={[styles.postPoster, { marginBottom: 10, marginRight: 20, fontSize: 10, opacity: 0.4, alignSelf: 'flex-end' }]}>
+                        Posted on {(() => {
+                            var d = new Date(post.more.date);
+                            return d.toLocaleDateString() + " at " + d.toLocaleTimeString()
+                        })()}
+                    </Text>
                     <View style={{
                         display: 'flex',
                         flexDirection: 'row',
                         marginLeft: 20
                     }}>
                         <Image
-                            source={require("../assets/profile_img.png")}
+                            source={{ uri: post.user.pfp }}
                             style={{ width: 38, height: 38, marginRight: 10, borderRadius: 25 }}
                         />
                         <View>
                             <Text style={styles.postTitle}>
-                                {post.title}
+                                {post.content.title}
                             </Text>
                             <Text style={styles.postPoster}>
-                                {post.op}
+                                {post.user.name}
                             </Text>
                         </View>
                     </View>
@@ -47,7 +57,7 @@ export default class ViewPostScreen extends React.Component {
                         style={styles.postImg}
                     />
                     <Text style={styles.postCaption}>
-                        {post.caption}
+                        {post.content.caption}
                     </Text>
                     <TouchableOpacity style={styles.likeButton}>
                         <View style={styles.likeBtnContentContainer}>

@@ -1,9 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { Platform, StyleSheet, Text, View, Image, Dimensions, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import { Platform, StyleSheet, Text, View, Image, Dimensions, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { Picker } from '@react-native-picker/picker';
 import userCache from '../user';
+
+import firebase from 'firebase';
 
 import { RFValue } from 'react-native-responsive-fontsize';
 import SpectagramHeader from '../components/header';
@@ -14,14 +16,16 @@ export default class Post extends React.Component {
         this.state = {
             titleInput: "",
             captionInput: "",
-            imageChosen: "i1",
-            dropdownHeight: 40,
-            imageChoice: 0
+            imageChoice: 0,
+            // dropdownHeight: 40,
         }
     }
 
     componentDidMount() {
         userCache.addRefresher(this);
+    }
+    componentWillUnmount() {
+        userCache.removeRefresher(this);
     }
 
     render() {
@@ -48,68 +52,70 @@ export default class Post extends React.Component {
         const styles = userCache.info.lightTheme ? lightStyles : darkStyles;
 
         return (
-            <ScrollView contentContainerStyle={styles.container}>
-                <SpectagramHeader/>
+            <KeyboardAvoidingView behavior="position">
+                <ScrollView contentContainerStyle={styles.container}>
+                    <SpectagramHeader />
 
-                <View style={styles.post}>
-                    <View style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        width: "100%",
-                    }}>
-                        <Image
-                            source={{uri: userCache.info.pfp}}
-                            style={{ width: 38, height: 38, marginRight: 10, borderRadius: 25 }}
-                        />
-                        <View style={{width: "90%"}}>
-                            <TextInput
-                                style={styles.postTitle}
-                                placeholder="Enter Title"
-                                onChangeText={(titleInput) => { this.setState({ titleInput }) }}
+                    <View style={styles.post}>
+                        <View style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            width: "100%",
+                        }}>
+                            <Image
+                                source={{ uri: userCache.info.pfp }}
+                                style={{ width: 38, height: 38, marginRight: 10, borderRadius: 25 }}
                             />
-                            <Text style={styles.postPoster}>
-                                Posting as <Text style={{fontStyle: 'italic'}}>{userCache.info.firstName + " " + userCache.info.lastName}</Text>
-                            </Text>
+                            <View style={{ width: "90%" }}>
+                                <TextInput
+                                    style={styles.postTitle}
+                                    placeholder="Enter Title"
+                                    onChangeText={(titleInput) => { this.setState({ titleInput }) }}
+                                    value={this.state.titleInput}
+                                />
+                                <Text style={styles.postPoster}>
+                                    Posting as <Text style={{ fontStyle: 'italic' }}>{userCache.info.firstName + " " + userCache.info.lastName}</Text>
+                                </Text>
+                            </View>
                         </View>
+                        <Image
+                            source={imgChoices[this.state.imageChoice]}
+                            style={styles.postImg}
+                        />
+                        <View style={{ height: 40, alignItems: 'center', padding: 5, marginBottom: 30 }}>
+
+                            <View style={{ display: 'flex', flexDirection: 'row' }}>
+                                <TouchableOpacity onPress={() => { this.changeImgChoice(-1) }}>
+                                    <Ionicons name="chevron-back-circle" size={30} color={userCache.info.lightTheme ? "black" : "white"} />
+                                </TouchableOpacity>
+                                <Text style={{ fontSize: 20, marginHorizontal: 20, color: userCache.info.lightTheme ? "black" : "white" }}>
+                                    Image {(this.state.imageChoice + 1).toString()}
+                                </Text>
+                                <TouchableOpacity onPress={() => { this.changeImgChoice(1) }}>
+                                    <Ionicons name="chevron-forward-circle" size={30} color={userCache.info.lightTheme ? "black" : "white"} />
+                                </TouchableOpacity>
+                            </View>
+
+                        </View>
+                        <TextInput
+                            style={styles.postCaption}
+                            placeholder="Enter Caption"
+                            value={this.state.captionInput}
+                            onChangeText={(captionInput) => { this.setState({ captionInput }) }}
+                        />
+                        <TouchableOpacity style={styles.postButton} onPress={this.post}>
+                            <View style={styles.postBtnContentContainer}>
+                                <Ionicons name="add-circle" size={RFValue(20)} color="white" />
+                                <Text style={styles.postBtnTxt}>
+                                    Post
+                                </Text>
+                            </View>
+
+                        </TouchableOpacity>
                     </View>
-                    <Image
-                        source={imgChoices[this.state.imageChoice]}
-                        style={styles.postImg}
-                    />
-                    <View style={{ height: 40, alignItems: 'center', padding: 5, marginBottom: 30 }}>
-
-                        <View style={{ display: 'flex', flexDirection: 'row' }}>
-                            <TouchableOpacity onPress={() => { this.changeImgChoice(-1) }}>
-                                <Ionicons name="chevron-back-circle" size={30} color={userCache.info.lightTheme ? "black" : "white"}/>
-                            </TouchableOpacity>
-                            <Text style={{ fontSize: 20, marginHorizontal: 20, color: userCache.info.lightTheme ? "black" : "white" }}>
-                                Image {(this.state.imageChoice + 1).toString()}
-                            </Text>
-                            <TouchableOpacity onPress={() => { this.changeImgChoice(1) }}>
-                                <Ionicons name="chevron-forward-circle" size={30} color={userCache.info.lightTheme ? "black" : "white"}/>
-                            </TouchableOpacity>
-                        </View>
-
-                    </View>
-                    <TextInput
-                        style={styles.postCaption}
-                        placeholder="Enter Caption"
-                        multiline={true}
-                        numberOfLines={3}
-                        onChangeText={(captionInput) => { this.setState({ captionInput }) }}
-                    />
-                    <TouchableOpacity style={styles.postButton}>
-                        <View style={styles.postBtnContentContainer}>
-                            <Ionicons name="add-circle" size={RFValue(20)} color="white" />
-                            <Text style={styles.postBtnTxt}>
-                                Post
-                            </Text>
-                        </View>
-
-                    </TouchableOpacity>
-                </View>
-                <View style={{ height: 100 }}></View>
-            </ScrollView>
+                    <View style={{ height: 100 }}></View>
+                </ScrollView>
+            </KeyboardAvoidingView>
         );
     }
 
@@ -118,6 +124,51 @@ export default class Post extends React.Component {
         i += amt;
         i = (i > 6 ? 6 : (i < 0 ? 0 : i));
         this.setState({ imageChoice: i });
+    }
+
+    post = () => {
+        if (this.state.titleInput.length < 3)
+        {
+            alert("Title is too short (must be at least 3 chars).");
+            return;
+        }
+        if (this.state.captionInput.length < 5)
+        {
+            alert("Caption is too short (must be at least 5 chars).");
+            return;
+        }
+
+        
+        var post = {
+            content: {
+                title: this.state.titleInput,
+                caption: this.state.captionInput,
+                image: this.state.imageChoice
+            },
+            user: {
+                name: userCache.info.firstName + " " + userCache.info.lastName,
+                pfp: userCache.info.pfp
+            },
+            more: {
+                date: firebase.database.ServerValue.TIMESTAMP
+            }
+        }
+
+        firebase.database().ref("/posts/").push(post).then((data) => {
+            this.emptyInputs();
+            console.log("posted", data);
+            alert("Posted story.");
+            data.once("value", (data) => {
+                console.log("data value", data.val());
+                this.props.navigation.navigate("ViewPostS", {post: data.val()});
+            })
+        }).catch((reason) => {
+            alert("error in posting story.\n" + reason);
+        });
+    }
+
+    emptyInputs = () => {
+        this.setState({ titleInput: "", captionInput: "", });
     }
 }
 
@@ -172,7 +223,7 @@ const lightStyles = StyleSheet.create({
     },
     postCaption: {
         alignSelf: 'center',
-        textAlign: 'center',    
+        textAlign: 'center',
         fontStyle: 'italic',
         marginTop: 5,
         marginBottom: 20,
@@ -261,7 +312,7 @@ const darkStyles = StyleSheet.create({
     },
     postCaption: {
         alignSelf: 'center',
-        textAlign: 'center',    
+        textAlign: 'center',
         fontStyle: 'italic',
         marginTop: 5,
         marginBottom: 20,

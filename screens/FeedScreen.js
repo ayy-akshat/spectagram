@@ -6,57 +6,69 @@ import { RFValue } from 'react-native-responsive-fontsize';
 import SpectagramHeader from '../components/header';
 import Post from '../components/Post';
 import userCache from '../user';
+import firebase from 'firebase';
 
-export default class FeedScreen extends React.Component
-{
-    constructor()
-    {
+export default class FeedScreen extends React.Component {
+    constructor() {
         super();
-        this.state = { posts: require("../screens/temp_posts.json") };
+        this.state = { posts: [], isRefreshing: true };
     }
 
     componentDidMount() {
         userCache.addRefresher(this);
+
+        firebase.database().ref("/posts/").on("value", (data) => {
+            this.setPostState(data.val());
+        })
+    }
+    componentWillUnmount() {
+        userCache.removeRefresher(this);
     }
 
-    render()
-    {
+    render() {
         const styles = userCache.info.lightTheme ? lightStyles : darkStyles;
         return (
             <View style={styles.container}>
-                <SafeAreaView style={styles.sav}/>
+                <SafeAreaView style={styles.sav} />
 
                 <FlatList
-                data={[{isHeader: true}, ...this.state.posts]}
-                keyExtractor={(item, index) => (index.toString())}
-                renderItem={this.renderPost}
-                style={{width: "100%"}}
-                contentContainerStyle={{alignItems: 'center', width: "100%", paddingBottom: 100}}
+                    data={[{ isHeader: true }, ...this.state.posts]}
+                    keyExtractor={(item, index) => (index.toString())}
+                    renderItem={this.renderPost}
+                    style={{ width: "100%" }}
+                    contentContainerStyle={{ alignItems: 'center', width: "100%", paddingBottom: 100 }}
+                    refreshing={this.state.isRefreshing}
+                    onRefresh={this.pullToRefresh}
                 />
 
             </View>
         );
     }
 
-    renderPost = ({item}) =>
-    {
-        if (item.isHeader)
-        {
+    renderPost = ({ item }) => {
+        if (item.isHeader) {
             return (
-                <SpectagramHeader/>
+                <SpectagramHeader />
             )
         }
-        else
-        {
+        else {
             return (
-                <Post post={item} onGoToPost={this.goToPost}/>
+                <Post post={item} onGoToPost={this.goToPost} />
             )
         }
     }
 
-    goToPost = (post) =>
-    {
-        this.props.navigation.navigate("ViewPostS", {post: post});
+    goToPost = (post) => {
+        this.props.navigation.navigate("ViewPostS", { post: post });
+    }
+
+    setPostState = (pObj) => {
+        var postList = [];
+        for (var p in pObj) {
+            postList.push({...pObj[p], id: p});
+        }
+        postList.sort((a, b) => b.more.date - a.more.date);
+        this.setState({ posts: postList, isRefreshing: false });
     }
 }
 

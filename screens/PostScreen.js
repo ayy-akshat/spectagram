@@ -150,7 +150,8 @@ export default class Post extends React.Component {
                 pfp: userCache.info.pfp
             },
             more: {
-                date: firebase.database.ServerValue.TIMESTAMP
+                date: firebase.database.ServerValue.TIMESTAMP,
+                likes: 0
             }
         }
 

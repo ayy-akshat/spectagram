@@ -5,13 +5,21 @@ import { Platform, StyleSheet, Text, View, Image, Dimensions, TouchableOpacity, 
 import { RFValue } from 'react-native-responsive-fontsize';
 import userCache from '../user';
 
+import firebase from 'firebase';
+
 export default class ViewPostScreen extends React.Component {
     constructor(props) {
         super(props);
+
+        this.state = { liked: false }
     }
 
     componentDidMount() {
         userCache.addRefresher(this);
+
+        if (this.props.route.params.liked !== undefined) {
+            this.setState({ liked: this.props.route.params.liked });
+        }
     }
     componentWillUnmount() {
         userCache.removeRefresher(this);
@@ -25,52 +33,81 @@ export default class ViewPostScreen extends React.Component {
         console.log("post", post);
         console.log("props", this.props);
 
-        return (
-            <ScrollView>
-                <View style={styles.container}>
-                    <Text style={[styles.postPoster, { marginBottom: 10, marginRight: 20, fontSize: 10, opacity: 0.4, alignSelf: 'flex-end' }]}>
-                        Posted on {(() => {
-                            var d = new Date(post.more.date);
-                            return d.toLocaleDateString() + " at " + d.toLocaleTimeString()
-                        })()}
-                    </Text>
-                    <View style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        marginLeft: 20
-                    }}>
+        try {
+            return (
+                <ScrollView>
+                    <View style={styles.container}>
+                        <Text style={[styles.postPoster, { marginBottom: 10, marginRight: 20, fontSize: 10, opacity: 0.4, alignSelf: 'flex-end' }]}>
+                            Posted on {(() => {
+                                var d = new Date(post.more.date);
+                                return d.toLocaleDateString() + " at " + d.toLocaleTimeString()
+                            })()}
+                        </Text>
+                        <View style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            marginLeft: 20
+                        }}>
+                            <Image
+                                source={{ uri: post.user.pfp }}
+                                style={{ width: 38, height: 38, marginRight: 10, borderRadius: 25 }}
+                            />
+                            <View>
+                                <Text style={styles.postTitle}>
+                                    {post.content.title}
+                                </Text>
+                                <Text style={styles.postPoster}>
+                                    {post.user.name}
+                                </Text>
+                            </View>
+                        </View>
                         <Image
-                            source={{ uri: post.user.pfp }}
-                            style={{ width: 38, height: 38, marginRight: 10, borderRadius: 25 }}
+                            source={require("../assets/post.jpeg")}
+                            style={styles.postImg}
                         />
-                        <View>
-                            <Text style={styles.postTitle}>
-                                {post.content.title}
-                            </Text>
-                            <Text style={styles.postPoster}>
-                                {post.user.name}
-                            </Text>
-                        </View>
-                    </View>
-                    <Image
-                        source={require("../assets/post.jpeg")}
-                        style={styles.postImg}
-                    />
-                    <Text style={styles.postCaption}>
-                        {post.content.caption}
-                    </Text>
-                    <TouchableOpacity style={styles.likeButton}>
-                        <View style={styles.likeBtnContentContainer}>
-                            <Ionicons name="heart" size={RFValue(30)} color="white" />
-                            <Text style={styles.likeTxt}>
-                                12k Likes
-                            </Text>
-                        </View>
+                        <Text style={styles.postCaption}>
+                            {post.content.caption}
+                        </Text>
+                        <TouchableOpacity style={this.state.liked ? styles.likeButton : styles.likeButtonInactive} onPress={this.toggleLike}>
+                            <View style={styles.likeBtnContentContainer}>
+                                <Ionicons name="heart" size={RFValue(30)} color="white" />
+                                <Text style={styles.likeTxt}>
+                                    {post.more.likes + this.state.liked} Likes
+                                </Text>
+                            </View>
 
-                    </TouchableOpacity>
-                </View>
-            </ScrollView>
-        );
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
+            );
+        } catch (error) {
+            return (
+                <ScrollView>
+                    <Text style={styles.postCaption}>
+                        Error while rendering this post:
+                    </Text>
+                    <Text style={styles.postCaption}>
+                        {error.toString()}
+                    </Text>
+                    <Text style={styles.postCaption}>
+                        You can ignore this and go back.
+                    </Text>
+                </ScrollView>
+            );
+        }
+    }
+
+    toggleLike = () => {
+        var id = this.props.route.params.post.id;
+
+        firebase.database().ref("/posts/" + id + "/more").update({
+            likes:
+                this.state.liked
+                    ? firebase.database.ServerValue.increment(-1)
+                    : firebase.database.ServerValue.increment(1)
+        });
+
+        this.setState({ liked: !this.state.liked });
     }
 }
 
@@ -120,6 +157,17 @@ const lightStyles = StyleSheet.create({
         maxWidth: "90%",
         alignSelf: 'center',
         backgroundColor: "tomato",
+        borderRadius: 100,
+        marginVertical: 20
+    },
+    likeButtonInactive: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 10,
+        paddingHorizontal: 100,
+        maxWidth: "90%",
+        alignSelf: 'center',
+        backgroundColor: "gray",
         borderRadius: 100,
         marginVertical: 20
     },
@@ -185,6 +233,17 @@ const darkStyles = StyleSheet.create({
         maxWidth: "90%",
         alignSelf: 'center',
         backgroundColor: "tomato",
+        borderRadius: 100,
+        marginVertical: 20
+    },
+    likeButtonInactive: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 10,
+        paddingHorizontal: 100,
+        maxWidth: "90%",
+        alignSelf: 'center',
+        backgroundColor: "gray",
         borderRadius: 100,
         marginVertical: 20
     },
